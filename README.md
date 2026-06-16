@@ -35,6 +35,7 @@ Sistema de gerenciamento de ordens de serviço para oficinas mecânicas, desenvo
 | `ordens_servico` | Ordens abertas, em manutenção e finalizadas        |
 | `historico`      | Registro de ordens concluídas com solução aplicada |
 
+![Diagrama Entidade-Relacionamento do SOSA](der.png)
 ---
 
 ## Fluxo do Sistema
