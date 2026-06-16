@@ -1,30 +1,25 @@
 from database import *
 
 
-# cadastra novos clientes no sistema
 def cadastrar_cliente():
 
     print("\n=== CADASTRAR CLIENTE ===")
 
-    # continua perguntando até receber um nome válido
     while True:
         nome = input("\nNome do cliente: ").strip()
         if nome and all(letra.isalpha() or letra.isspace() for letra in nome):
             break
         print("Nome inválido! Use apenas letras.")
 
-    # continua perguntando até receber um telefone válido
     while True:
         telefone = input("Telefone (apenas números): ").strip()
         if telefone.isdigit() and len(telefone) >= 8:
             break
         print("Telefone inválido! Digite apenas números (mínimo 8 dígitos).")
 
-    # abre conexão com o banco
     conn = conectar()
     cursor = conn.cursor()
 
-    # verifica se já existe cliente com o mesmo nome e telefone
     cursor.execute("""
         SELECT id FROM clientes
         WHERE nome = %s AND telefone = %s
@@ -36,7 +31,6 @@ def cadastrar_cliente():
         conn.close()
         return
 
-    # insere o cliente no banco
     cursor.execute("""
         INSERT INTO clientes (nome, telefone)
         VALUES (%s, %s)
@@ -49,7 +43,6 @@ def cadastrar_cliente():
     conn.close()
 
 
-# registra nova ordem de serviço
 def registrar_ordem():
 
     print("\n=== ABRIR ORDEM DE SERVIÇO ===")
@@ -57,11 +50,9 @@ def registrar_ordem():
     conn = conectar()
     cursor = conn.cursor()
 
-    # busca clientes cadastrados
     cursor.execute("SELECT id, nome, telefone FROM clientes ORDER BY nome")
     clientes = cursor.fetchall()
 
-    # verifica se há clientes cadastrados
     if not clientes:
         print("\nNenhum cliente cadastrado. Cadastre um cliente primeiro.")
         cursor.close()
@@ -74,7 +65,6 @@ def registrar_ordem():
 
     ids_validos_clientes = [c[0] for c in clientes]
 
-    # continua perguntando até receber ID válido
     while True:
         try:
             id_cliente = int(input("\nID do cliente: "))
@@ -84,7 +74,6 @@ def registrar_ordem():
         except ValueError:
             print("Digite apenas números válidos!")
 
-    # busca tipos de serviço disponíveis
     cursor.execute("SELECT id, descricao FROM tipos_servico ORDER BY id")
     tipos = cursor.fetchall()
 
@@ -94,7 +83,6 @@ def registrar_ordem():
 
     ids_validos_tipos = [t[0] for t in tipos]
 
-    # continua perguntando até receber ID válido
     while True:
         try:
             id_tipo = int(input("\nID do tipo de serviço: "))
@@ -104,21 +92,18 @@ def registrar_ordem():
         except ValueError:
             print("Digite apenas números válidos!")
 
-    # continua perguntando até receber uma descrição válida
     while True:
         descricao = input("\nDescreva o problema do veículo: ").strip()
         if descricao:
             break
         print("A descrição não pode ficar vazia!")
 
-    # continua perguntando até receber modelo válido
     while True:
         modelo_veiculo = input("Modelo do veículo (ex: Gol 2015): ").strip()
         if modelo_veiculo:
             break
         print("O modelo do veículo não pode ficar vazio!")
 
-    # insere a ordem de serviço no banco
     cursor.execute("""
         INSERT INTO ordens_servico
         (cliente_id, tipo_servico_id, descricao, modelo_veiculo, status)
@@ -132,7 +117,6 @@ def registrar_ordem():
     conn.close()
 
 
-# encaminha ordem de serviço para mecânico
 def encaminhar_ordem():
 
     conn = conectar()
@@ -140,7 +124,6 @@ def encaminhar_ordem():
 
     print("\n=== ORDENS DE SERVIÇO ABERTAS ===")
 
-    # busca ordens abertas com nome do cliente e tipo de serviço
     cursor.execute("""
         SELECT o.id, c.nome, ts.descricao, o.modelo_veiculo, o.descricao
         FROM ordens_servico o
@@ -151,7 +134,6 @@ def encaminhar_ordem():
 
     ordens = cursor.fetchall()
 
-    # verifica se existem ordens abertas
     if not ordens:
         print("\nNenhuma ordem de serviço aberta.")
         cursor.close()
@@ -167,7 +149,6 @@ def encaminhar_ordem():
 
     ids_validos_ordens = [o[0] for o in ordens]
 
-    # continua perguntando até receber ID válido
     while True:
         try:
             id_ordem = int(input("\nID da ordem de serviço: "))
@@ -179,7 +160,6 @@ def encaminhar_ordem():
 
     print("\n=== URGÊNCIA E GRAVIDADE ===")
 
-    # continua perguntando até receber valor válido
     while True:
         try:
             urgencia = int(input("Urgência: (1) Baixa  (2) Média  (3) Alta: \n"))
@@ -189,7 +169,6 @@ def encaminhar_ordem():
         except ValueError:
             print("Valor inválido! Digite apenas 1, 2 ou 3.")
 
-    # continua perguntando até receber valor válido
     while True:
         try:
             gravidade = int(input("Gravidade do problema: (1) Leve  (2) Moderada  (3) Grave: \n"))
@@ -199,8 +178,6 @@ def encaminhar_ordem():
         except ValueError:
             print("Valor inválido! Digite apenas 1, 2 ou 3.")
 
-    # define prioridade com base na matriz urgência × gravidade
-    # urgência tem peso maior que gravidade
     matriz = {
         (1, 1): "Baixa",
         (1, 2): "Baixa",
@@ -218,7 +195,6 @@ def encaminhar_ordem():
 
     print("\n=== MECÂNICOS DISPONÍVEIS ===")
 
-    # busca mecânicos compatíveis com a prioridade
     if prioridade == "Baixa":
         cursor.execute("""
             SELECT id, nome, nivel FROM mecanicos
@@ -237,7 +213,6 @@ def encaminhar_ordem():
 
     mecanicos = cursor.fetchall()
 
-    # verifica se existem mecânicos
     if not mecanicos:
         print("\nNenhum mecânico disponível para essa prioridade.")
         cursor.close()
@@ -251,7 +226,6 @@ def encaminhar_ordem():
 
     ids_validos_mecanicos = [m[0] for m in mecanicos]
 
-    # continua perguntando até receber ID válido
     while True:
         try:
             id_mec = int(input("\nID do mecânico responsável: "))
@@ -261,11 +235,9 @@ def encaminhar_ordem():
         except ValueError:
             print("Digite apenas números válidos!")
 
-    # busca o próximo número de ordem
     cursor.execute("SELECT COALESCE(MAX(num_ordem), 0) + 1 FROM ordens_servico")
     num_ordem = cursor.fetchone()[0]
 
-    # atualiza a ordem com mecânico, prioridade e número de ordem
     cursor.execute("""
         UPDATE ordens_servico
         SET mecanico_id = %s, prioridade = %s, status = 'em manutencao', num_ordem = %s
@@ -279,7 +251,6 @@ def encaminhar_ordem():
     conn.close()
 
 
-# finaliza ordem de serviço em manutenção
 def concluir_ordem():
 
     conn = conectar()
@@ -287,7 +258,6 @@ def concluir_ordem():
 
     print("\n=== ORDENS EM MANUTENÇÃO ===")
 
-    # busca ordens em manutenção com nome do mecânico e do cliente
     cursor.execute("""
         SELECT o.id, o.num_ordem, m.nome, c.nome, ts.descricao,
                o.modelo_veiculo, o.descricao, o.status, o.mecanico_id
@@ -300,7 +270,6 @@ def concluir_ordem():
 
     ordens = cursor.fetchall()
 
-    # verifica se existem ordens em manutenção
     if not ordens:
         print("\nNenhuma ordem em manutenção.")
         cursor.close()
@@ -319,7 +288,6 @@ def concluir_ordem():
 
     ids_validos = [o[0] for o in ordens]
 
-    # continua perguntando até receber ID válido
     while True:
         try:
             id_ordem = int(input("\nID da ordem de serviço: "))
@@ -329,24 +297,20 @@ def concluir_ordem():
         except ValueError:
             print("Digite apenas números válidos!")
 
-    # continua perguntando até receber descrição válida
     while True:
         solucao_aplicada = input("\nDescreva a solução aplicada: ").strip()
         if solucao_aplicada:
             break
         print("A descrição da solução não pode ficar vazia!")
 
-    # busca o mecanico_id da ordem selecionada
     ordem = next(o for o in ordens if o[0] == id_ordem)
     id_mecanico = ordem[8]
 
-    # insere no histórico
     cursor.execute("""
         INSERT INTO historico (ordem_id, mecanico_id, solucao_aplicada)
         VALUES (%s, %s, %s)
     """, (id_ordem, id_mecanico, solucao_aplicada))
 
-    # atualiza status para finalizada
     cursor.execute("""
         UPDATE ordens_servico
         SET status = 'finalizada'
@@ -360,7 +324,6 @@ def concluir_ordem():
     conn.close()
 
 
-# exibe histórico das ordens finalizadas
 def historico_ordens():
 
     conn = conectar()
@@ -391,7 +354,6 @@ def historico_ordens():
 
     historico = cursor.fetchall()
 
-    # verifica se existem registros
     if not historico:
         print("\nNenhuma ordem finalizada ainda.")
         cursor.close()
@@ -414,7 +376,6 @@ def historico_ordens():
     conn.close()
 
 
-# função auxiliar: exibe ordens filtradas por status
 def exibir_por_status(cursor, status, titulo):
 
     cursor.execute("""
@@ -423,7 +384,6 @@ def exibir_por_status(cursor, status, titulo):
         FROM ordens_servico o
         JOIN clientes c ON o.cliente_id = c.id
         JOIN tipos_servico ts ON o.tipo_servico_id = ts.id
-        LEFT JOIN mecanicos m ON o.mecanico_id = m.id
         WHERE o.status = %s
     """, (status,))
 
@@ -448,7 +408,6 @@ def exibir_por_status(cursor, status, titulo):
             print(f"Prioridade: {o[7]}")
 
 
-# exibe estatísticas por status, prioridade e filtros
 def relatorio():
 
     print("\n=== ESTATÍSTICAS ===")
@@ -463,7 +422,6 @@ def relatorio():
     conn = conectar()
     cursor = conn.cursor()
 
-    # impede erro ao digitar letra no input
     try:
         escolha = int(input("\nDigite o número da opção desejada: "))
     except ValueError:
@@ -472,7 +430,6 @@ def relatorio():
         conn.close()
         return
 
-    # totais por status e por prioridade via COUNT + GROUP BY
     if escolha == 1:
 
         print("\n--- Totais por status ---")
@@ -507,7 +464,6 @@ def relatorio():
     elif escolha == 4:
         exibir_por_status(cursor, 'finalizada', 'ORDENS FINALIZADAS')
 
-    # consulta por prioridade
     elif escolha == 5:
 
         print("\nPrioridade: (1) Baixa  (2) Média  (3) Alta")
@@ -539,7 +495,6 @@ def relatorio():
                 print(f"\nID: {o[0]} | Cliente: {o[1]} | Serviço: {o[2]}")
                 print(f"Veículo: {o[3]} | Status: {o[4]} | Prioridade: {o[5]}")
 
-    # consulta por cliente
     elif escolha == 6:
 
         nome_busca = input("\nDigite o nome do cliente: ").strip()

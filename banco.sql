@@ -1,30 +1,22 @@
--- cria e seleciona o banco de dados
-CREATE DATABASE IF NOT EXISTS oficina_mecanica;
-USE oficina_mecanica;
-
--- tabela de clientes
-CREATE TABLE clientes (
+CREATE TABLE IF NOT EXISTS clientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     telefone VARCHAR(20) NOT NULL,
     CONSTRAINT uq_clientes_nome_telefone UNIQUE (nome, telefone)
 );
 
--- tabela de mecânicos
-CREATE TABLE mecanicos (
+CREATE TABLE IF NOT EXISTS mecanicos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     nivel VARCHAR(50) NOT NULL
 );
 
--- tabela de tipos de serviço
-CREATE TABLE tipos_servico (
+CREATE TABLE IF NOT EXISTS tipos_servico (
     id INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(100) NOT NULL
 );
 
--- tabela de ordens de serviço
-CREATE TABLE ordens_servico (
+CREATE TABLE IF NOT EXISTS ordens_servico (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cliente_id INT NOT NULL,
     tipo_servico_id INT NOT NULL,
@@ -46,8 +38,7 @@ CREATE TABLE ordens_servico (
         REFERENCES mecanicos(id)
 );
 
--- tabela de histórico
-CREATE TABLE historico (
+CREATE TABLE IF NOT EXISTS historico (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ordem_id INT NOT NULL,
     mecanico_id INT NOT NULL,
@@ -61,8 +52,7 @@ CREATE TABLE historico (
         REFERENCES mecanicos(id)
 );
 
--- mecânicos cadastrados por nível
-INSERT INTO mecanicos (nome, nivel) VALUES
+INSERT IGNORE INTO mecanicos (nome, nivel) VALUES
 ('Antonio Vieira',    'mecanico chefe'),
 ('Renato Barbosa',    'mecanico chefe'),
 ('Eduardo Teixeira',  'mecanico'),
@@ -74,8 +64,7 @@ INSERT INTO mecanicos (nome, nivel) VALUES
 ('William Mendes',    'estagiario'),
 ('Samuel Rocha',      'estagiario');
 
--- tipos de serviço disponíveis
-INSERT INTO tipos_servico (descricao) VALUES
+INSERT IGNORE INTO tipos_servico (descricao) VALUES
 ('Troca de óleo'),
 ('Revisão de freios'),
 ('Revisão geral'),
